@@ -41,7 +41,7 @@ model = DummyKerasModel()
 # some dummy training.
 model.train(np.zeros((10, 72, 96, 4)), np.ones((10,)))
 
-env = make("football", debug=True, configuration={"scenario_name": "11_vs_11_stochastic", "team_1": 1, "team_2": 1, "episodeSteps": 30, "render": False, "save_video": True})
+env = make("football", debug=True, configuration={"scenario_name": "test_example_multiagent", "team_1": 1, "team_2": 1, "episodeSteps": 100, "render": False, "save_video": True})
 print(env.name, env.version)
 print("Default Agents: ", *env.agents)
 
