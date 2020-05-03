@@ -2,7 +2,8 @@ import os
 import tensorflow as tf
 from kaggle_environments import make, register
 from kaggle_environments.envs.football import football
-
+from gfootball.env import observation_preprocessing
+from gfootball.env import wrappers
 
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten
@@ -27,9 +28,13 @@ class DummyKerasModel(object):
 
   def run_agent(self, obs, config, reward, info):
     print('About to start the agent')
-    minimap = np.reshape(np.array(obs['minimap']), (72, 96, 4))
-    # Add a batch dimension
-    minimap = np.expand_dims(minimap, axis=0)
+
+    # Simple115 observation
+    simple115_obs = wrappers.Simple115StateWrapper.convert_observation(obs.players_raw, True)
+    # Or minimap observation.
+    minimap = observation_preprocessing.generate_smm(obs.players_raw) 
+
+    ## TODO: this should not be a batch dimension.
     print("Calling the model")
     action = np.argmax(self._model(minimap))
     print("Done")
