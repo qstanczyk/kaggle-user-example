@@ -28,10 +28,15 @@ class DummyKerasModel(object):
 
   def run_agent(self, obs, config, reward, info):
     print('About to start the agent')
+    # As we train a simple, single player agent we want to control a single player at a time, so we use
+    # MultiAgentToSingleAgent wrapper to modify multi-agent scenario observations.
+    single_obs = wrappers.MultiAgentToSingleAgent.get_observation(obs.players_raw)
 
-    # Simple115 observation
+    # Then we can apply additional wrappers to use different observation format for the agent.
+    # For more details see https://github.com/google-research/football/blob/master/gfootball/doc/observation.md
+    # Simple115 observation:
     simple115_obs = wrappers.Simple115StateWrapper.convert_observation(obs.players_raw, True)
-    # Or minimap observation.
+    # Minimap observation:
     minimap = observation_preprocessing.generate_smm(obs.players_raw) 
 
     ## TODO: this should not be a batch dimension.
@@ -39,17 +44,17 @@ class DummyKerasModel(object):
     action = np.argmax(self._model(minimap))
     print("Done")
     # you have to cast it back to int (from numpy.int64)
-    return [int(action)]
+    return wrappers.MultiAgentToSingleAgent.get_action(action, obs.players_raw)
 
 
 model = DummyKerasModel()
 # some dummy training.
 model.train(np.zeros((10, 72, 96, 4)), np.ones((10,)))
 
-env = make("football", debug=True, configuration={"scenario_name": "test_example_multiagent", "team_1": 1, "team_2": 1, "episodeSteps": 100, "render": False, "save_video": True})
+env = make("football", debug=True, configuration={"scenario_name": "11_vs_11_kaggle", "team_1": 11, "team_2": 11, "episodeSteps": 100, "render": False, "save_video": True})
 print(env.name, env.version)
 print("Default Agents: ", *env.agents)
 
-env.run([model.run_agent, "run_left"])
+env.run([model.run_agent, "builtin_ai_agent"])
 football.cleanup(env)
 print("Logs stored in /tmp/football/%s" % env.id)
